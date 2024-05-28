@@ -10,11 +10,10 @@ FakeRobot::FakeRobot()
 
 
 
-CallbackReturn FakeRobot::on_init(const hardware_interface::HardwareInfo & info)
+return_type FakeRobot::configure(const hardware_interface::HardwareInfo & info)
 {
-  if (hardware_interface::StateInterface::on_init(info) != CallbackReturn::SUCCESS)
-  {
-    return CallbackReturn::ERROR;
+  if (configure_default(info) != return_type::OK) {
+    return return_type::ERROR;
   }
 
   RCLCPP_INFO(logger_, "Configuring...");
@@ -34,7 +33,8 @@ CallbackReturn FakeRobot::on_init(const hardware_interface::HardwareInfo & info)
 
   RCLCPP_INFO(logger_, "Finished Configuration");
 
-  return CallbackReturn::SUCCESS;
+  status_ = hardware_interface::status::CONFIGURED;
+  return return_type::OK;
 }
 
 std::vector<hardware_interface::StateInterface> FakeRobot::export_state_interfaces()
@@ -64,18 +64,20 @@ std::vector<hardware_interface::CommandInterface> FakeRobot::export_command_inte
 }
 
 
-CallbackReturn FakeRobot::on_activate(const rclcpp_lifecycle::State & previous_state)
+return_type FakeRobot::start()
 {
   RCLCPP_INFO(logger_, "Starting Controller...");
+  status_ = hardware_interface::status::STARTED;
 
-  return CallbackReturn::SUCCESS;
+  return return_type::OK;
 }
 
-CallbackReturn FakeRobot::on_deactivate(const rclcpp_lifecycle::State & previous_state)
+return_type FakeRobot::stop()
 {
   RCLCPP_INFO(logger_, "Stopping Controller...");
+  status_ = hardware_interface::status::STOPPED;
 
-  return CallbackReturn::SUCCESS;
+  return return_type::OK;
 }
 
 hardware_interface::return_type FakeRobot::read()
@@ -95,6 +97,8 @@ hardware_interface::return_type FakeRobot::read()
   r_wheel_.pos = r_wheel_.pos + r_wheel_.vel * deltaSeconds;
 
   return return_type::OK;
+
+  
 }
 
 hardware_interface::return_type FakeRobot::write()
